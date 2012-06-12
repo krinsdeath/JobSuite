@@ -1,0 +1,15 @@
+name: JobSuite
+main: net.krinsoft.jobsuite.JobCore
+version: maven-version-number
+author: krinsdeath
+
+commands:
+  jobsuite:
+    aliases: [job, js]
+    description: The root command for all of JobSuite's features
+    usage: /<command> ...
+    
+permissions:
+  jobsuite.help.admin:
+    description: Allows the user to view JobSuite's administrative command help.
+    default: op
