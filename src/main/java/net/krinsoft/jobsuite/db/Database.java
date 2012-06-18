@@ -132,6 +132,8 @@ public class Database {
                     "reward INTEGER, " +
                     "expiry INTEGER, " +
                     "lock TEXT, " +
+                    "finished BOOLEAN, " +
+                    "claimed BOOLEAN, " +
                     "PRIMARY KEY (id, job_id, owner)" +
                     ");"
             );
@@ -165,7 +167,7 @@ public class Database {
     public void load() {
         try {
             Statement state = connection.createStatement();
-            ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base WHERE expiry > " + System.currentTimeMillis() + ";");
+            ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base WHERE expiry > " + System.currentTimeMillis() + " AND claimed = 'false' ;");
             PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ORDER BY item_entry ASC ;");
             PreparedStatement enchState = prepare("SELECT * FROM jobsuite_enchantments WHERE enchantment_entry = ? ;");
             while (base.next()) {
@@ -188,6 +190,9 @@ public class Database {
                     }
                 }
                 plugin.getJobManager().addJob(job);
+                if (base.getBoolean("finished")) {
+                    plugin.getJobManager().moveToClaims(job);
+                }
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());

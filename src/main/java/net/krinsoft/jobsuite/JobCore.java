@@ -27,7 +27,12 @@ public class JobCore extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // let's see how long it takes to start up!
         long time = System.currentTimeMillis();
+
+        // validate allpay
+        validateAllPay();
+
         // generate a default config if it doesn't exist already
         if (!new File(getDataFolder(), "config.yml").exists()) {
             getConfig().setDefaults(YamlConfiguration.loadConfiguration(this.getClass().getResourceAsStream("/config.yml")));
@@ -47,7 +52,7 @@ public class JobCore extends JavaPlugin {
             public void run() {
                 manager.persist();
             }
-        }, 3600L, 3600L);
+        }, 180L * 20L, 180L * 20L); // save every 3 minutes (180 seconds)
         getLogger().info("JobSuite initialized! (" + (System.currentTimeMillis() - time) + "ms)");
     }
 
@@ -98,7 +103,9 @@ public class JobCore extends JavaPlugin {
         // ADMINISTRATIVE
         commands.registerCommand(new JobLockCommand(this));
         commands.registerCommand(new JobUnlockCommand(this));
+        commands.registerCommand(new JobFinishCommand(this));
         commands.registerCommand(new JobCancelCommand(this));
+        commands.registerCommand(new JobClaimCommand(this));
         commands.registerCommand(new JobListCommand(this));
         commands.registerCommand(new JobInfoCommand(this));
 
@@ -114,7 +121,8 @@ public class JobCore extends JavaPlugin {
     public boolean validateAllPay() {
         if (bank != null) { return true; }
         AllPay handle = new AllPay(this, "[JobSuite] ");
-        if ((bank = handle.getEconPlugin()) != null) {
+        if ((bank = handle.loadEconPlugin()) != null) {
+            bank.toggleReceipts(false);
             debug("Economy hooked.");
         }
         return false;

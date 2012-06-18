@@ -1,14 +1,20 @@
 package net.krinsoft.jobsuite;
 
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author krinsdeath
  */
 public class Job {
-    private int id;
+    private final int id;
     private final String owner;
     private final String name;
     private String description;
@@ -17,6 +23,10 @@ public class Job {
     private String locked;
 
     private double reward;
+
+    private boolean finished;
+
+    private boolean claimed;
 
     private Map<Integer, JobItem> objectives = new HashMap<Integer, JobItem>();
 
@@ -184,6 +194,67 @@ public class Job {
 
     public String getLock() {
         return locked;
+    }
+
+    public boolean hasRequiredItems(CommandSender sender) {
+        if (sender instanceof ConsoleCommandSender) {
+            return true;
+        }
+        boolean hasAllItems = false;
+        int matchingItems = 0;
+        for (JobItem jobItem : getItems()) {
+            if (sender instanceof Player) {
+                for (ItemStack invItem : ((Player)sender).getInventory().getContents()) {
+                    if (matchingItems >= getItems().size()) { break; }
+                    if (invItem == null) { continue; }
+                    if (invItem.equals(jobItem.getItem())) {
+                        matchingItems++;
+                        break;
+                    }
+                }
+            }
+            if (matchingItems >= getItems().size()) {
+                hasAllItems = true;
+                break;
+            }
+        }
+        return hasAllItems;
+    }
+
+    public void finish() {
+        this.finished = true;
+    }
+
+    public boolean isFinished() {
+        return this.finished;
+    }
+
+    public void claim() {
+        this.claimed = true;
+    }
+
+    public boolean isClaimed() {
+        return this.claimed;
+    }
+
+    @Override
+    public String toString() {
+        return "Job{id=" + id + ",name=" + name + ",owner=" + owner + "}";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 13 * 3;
+        h = h + toString().hashCode() * id;
+        return h * 13;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) { return true; }
+        if (obj.getClass() != this.getClass()) { return false; }
+        Job that = (Job) obj;
+        return (that.toString().equals(this.toString()) && that.hashCode() == this.hashCode());
     }
 
 }

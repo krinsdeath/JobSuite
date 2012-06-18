@@ -2,11 +2,16 @@ package net.krinsoft.jobsuite;
 
 import net.krinsoft.jobsuite.db.Database;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author krinsdeath
@@ -16,6 +21,7 @@ public class JobManager {
     private Database database;
 
     private Map<Integer, Job> jobs = new HashMap<Integer, Job>();
+    private List<Job> claims = new ArrayList<Job>();
 
     private int nextJob;
 
@@ -35,7 +41,7 @@ public class JobManager {
 
     public void persist() {
         PreparedStatement schema = database.prepare("REPLACE INTO jobsuite_schema (id, NEXT_ID) VALUES (?, ?);");
-        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, lock) VALUES (?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, lock, finished, claimed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, item_entry, enchantment_entry, type, amount) VALUES (?, ?, ?, ?, ?);");
         PreparedStatement enchStatement = database.prepare("REPLACE INTO jobsuite_enchantments (job_id, enchantment_entry, enchantment, power) VALUES (?, ?, ?, ?);");
         try {
@@ -55,6 +61,8 @@ public class JobManager {
                 jobStatement.setLong(5, job.getDuration());
                 jobStatement.setDouble(6, job.getReward());
                 jobStatement.setString(7, job.getLock());
+                jobStatement.setBoolean(8, job.isFinished());
+                jobStatement.setBoolean(9, job.isClaimed());
                 jobStatement.executeUpdate();
                 for (JobItem item : job.getItems()) {
                     itemStatement.setInt(1, job.getId());
@@ -120,22 +128,65 @@ public class JobManager {
      */
     public boolean cancelJob(CommandSender sender, Job job) {
         Job cancel = jobs.remove(job.getId());
-        if (cancel != null && (cancel.getOwner().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.cancel") || cancel.isExpired())) {
+        if (cancel != null && (cancel.getOwner().equals(sender.getName()) || cancel.getLock().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.cancel") || cancel.isExpired())) {
             PreparedStatement basePrep = database.prepare("DELETE FROM jobsuite_base WHERE job_id = ? ;");
             PreparedStatement itemPrep = database.prepare("DELETE FROM jobsuite_items WHERE job_id = ? ;");
             PreparedStatement enchPrep = database.prepare("DELETE FROM jobsuite_enchantments WHERE job_id = ? ;");
             try {
                 basePrep.setInt(1, cancel.getId());
-                itemPrep.setInt(1, cancel.getId());
-                enchPrep.setInt(1, cancel.getId());
                 basePrep.executeUpdate();
+                itemPrep.setInt(1, cancel.getId());
                 itemPrep.executeUpdate();
+                enchPrep.setInt(1, cancel.getId());
                 enchPrep.executeUpdate();
             } catch (SQLException e) {
                 plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
             }
         }
         return cancel != null;
+    }
+
+    public void finishJob(CommandSender sender, Job job) {
+        moveToClaims(job);
+        if (!(sender instanceof ConsoleCommandSender)) {
+            plugin.getBank().give((Player) sender, job.getReward(), -1);
+        }
+    }
+
+    public void moveToClaims(Job job) {
+        if (!job.isFinished()) {
+            job.finish();
+            claims.add(job);
+            if (job.getOwner().equals("CONSOLE")) {
+                claim(job);
+            }
+        }
+    }
+
+    public List<Job> getClaimableJobs(CommandSender sender) {
+        List<Job> jobs = new ArrayList<Job>();
+        for (Job job : claims) {
+            if (job.getOwner().equals(sender.getName())) {
+                jobs.add(job);
+            }
+        }
+        return jobs;
+    }
+
+    public Job getClaimableJob(CommandSender sender, int id) {
+        for (Job job : getClaimableJobs(sender)) {
+            if (job.getId() == id) {
+                return job;
+            }
+        }
+        return null;
+    }
+
+    public void claim(Job job) {
+        if (claims.contains(job)) {
+            job.claim();
+            claims.remove(job);
+        }
     }
 
     /////////////////

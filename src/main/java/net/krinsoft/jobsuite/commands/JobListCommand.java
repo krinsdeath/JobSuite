@@ -45,10 +45,17 @@ public class JobListCommand extends JobCommand {
         if (page < 0) {
             page = 1;
         }
+        if (jobs.size() == 0) {
+            message(sender, "There are no jobs available.");
+            return;
+        }
         message(sender, "Job List [" + (page+1) + "/" + (pages+1) + "] - Total: " + jobs.size());
+        message(sender, "Lock: " + ChatColor.AQUA + "/job lock [job id]");
         for (int i = page * 6; i < bound; i++) {
             Job job = jobs.get(i);
-            message(sender, ChatColor.GOLD + "[" + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
+            if (!job.isFinished()) {
+                message(sender, ChatColor.GOLD + "[ID: " + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
+            }
         }
     }
 }

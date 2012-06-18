@@ -27,15 +27,19 @@ public class JobUnlockCommand extends JobCommand {
     public void runCommand(CommandSender sender, List<String> args) {
         try {
             Job job = manager.getJob(Integer.parseInt(args.get(0)));
-            if (job.getLock() != null) {
-                if (job.getLock().equals(sender.getName()) || job.getOwner().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.unlock")) {
-                    job.unlock();
-                    message(sender, "Job unlocked.");
+            if (job != null) {
+                if (job.getLock() != null) {
+                    if (job.getLock().equals(sender.getName()) || job.getOwner().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.unlock")) {
+                        job.unlock();
+                        message(sender, "Job unlocked.");
+                    } else {
+                        error(sender, "You can't unlock that job.");
+                    }
                 } else {
-                    error(sender, "You can't unlock that job.");
+                    message(sender, "Job isn't locked.");
                 }
             } else {
-                message(sender, "Job isn't locked.");
+                error(sender, "Couldn't find a matching job.");
             }
         } catch (NumberFormatException e) {
             error(sender, "Error parsing argument: expected number");
