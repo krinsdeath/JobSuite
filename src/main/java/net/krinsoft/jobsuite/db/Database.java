@@ -26,7 +26,7 @@ public class Database {
             this.className = clazz;
         }
 
-        String getClassname() {
+        String getDriver() {
             return this.className;
         }
 
@@ -70,18 +70,17 @@ public class Database {
     }
 
     public boolean connect() {
-        if (connection != null) {
-            return true;
-        }
         try {
+            if (connection != null && !connection.isClosed()) {
+                return true;
+            }
             Properties props = new Properties();
             if (type == Type.MySQL) {
-                props.put("autoReconnect", true);
                 props.put("user", plugin.getConfig().getString("database.user", "root"));
                 props.put("password", plugin.getConfig().getString("database.password", "root"));
             }
-            Class.forName(type.getClassname());
-            String connURL = "jdbc:" + type.name().toLowerCase() + ":" + getDatabasePath();
+            Class.forName(type.getDriver());
+            String connURL = getDatabasePath();
             plugin.getLogger().info("Connection URL: " + connURL);
             connection = DriverManager.getConnection(connURL, props);
         } catch (ClassNotFoundException e) {
@@ -116,6 +115,9 @@ public class Database {
             return;
         }
         try {
+            if (!connect()) {
+                return;
+            }
             Statement state = connection.createStatement();
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_schema (" +
                     "id INTEGER AUTO_INCREMENT, " +
@@ -125,23 +127,23 @@ public class Database {
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_base (" +
                     "id INTEGER AUTO_INCREMENT, " +
-                    "job_id INTEGER, " +
-                    "owner VARCHAR(32), " +
-                    "name VARCHAR(32), " +
+                    "job_id INTEGER NOT NULL, " +
+                    "owner VARCHAR(32) NOT NULL, " +
+                    "name TEXT, " +
                     "description TEXT, " +
                     "reward INTEGER, " +
-                    "expiry INTEGER, " +
-                    "lock TEXT, " +
-                    "finished BOOLEAN, " +
-                    "claimed BOOLEAN, " +
-                    "PRIMARY KEY (id, job_id, owner)" +
+                    "expiry BIGINT, " +
+                    "locked_by VARCHAR(32) DEFAULT NULL, " +
+                    "finished BOOLEAN DEFAULT false, " +
+                    "claimed BOOLEAN DEFAULT false, " +
+                    "PRIMARY KEY (id, job_id, owner) " +
                     ");"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_items (" +
                     "item_id INTEGER AUTO_INCREMENT, " +
-                    "job_id INTEGER, " +
-                    "item_entry INTEGER, " +
-                    "enchantment_entry INTEGER, " +
+                    "job_id INTEGER NOT NULL, " +
+                    "item_entry INTEGER NOT NULL, " +
+                    "enchantment_entry INTEGER NOT NULL, " +
                     "type TEXT, " +
                     "amount INTEGER, " +
                     "PRIMARY KEY (item_id, item_entry), " +
@@ -150,8 +152,8 @@ public class Database {
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_enchantments (" +
                     "enchantment_id INTEGER AUTO_INCREMENT, " +
-                    "job_id INTEGER, " +
-                    "enchantment_entry INTEGER, " +
+                    "job_id INTEGER NOT NULL, " +
+                    "enchantment_entry INTEGER NOT NULL, " +
                     "enchantment INTEGER, " +
                     "power INTEGER," +
                     "PRIMARY KEY (enchantment_id), " +
@@ -166,6 +168,9 @@ public class Database {
 
     public void load() {
         try {
+            if (!connect()) {
+                return;
+            }
             Statement state = connection.createStatement();
             ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base WHERE expiry > " + System.currentTimeMillis() + " AND claimed = 'false' ;");
             PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ORDER BY item_entry ASC ;");
@@ -174,7 +179,7 @@ public class Database {
                 Job job = new Job(base.getString("owner"), base.getString("name"), base.getInt("job_id"), base.getLong("expiry"));
                 job.setDescription(base.getString("description"));
                 job.setReward(base.getDouble("reward"));
-                job.lock(base.getString("lock"));
+                job.lock(base.getString("locked_by"));
                 itemState.setInt(1, job.getId());
                 ResultSet items = itemState.executeQuery();
                 while (items.next()) {
@@ -202,17 +207,17 @@ public class Database {
     public String getDatabasePath() {
         String path;
         if (type == Type.SQLite) {
-            path = plugin.getDataFolder().toString() + "/";
+            path = "jdbc:sqlite:" + plugin.getDataFolder().toString() + "/";
             return path += plugin.getConfig().getString("database.name", "jobsuite") + ".db";
         } else {
-            path = "//" + plugin.getConfig().getString("database.host", "localhost");
+            path = "jdbc:mysql://" + plugin.getConfig().getString("database.host", "localhost");
             path += ":" + plugin.getConfig().getInt("database.port", 3306);
             return path += "/" + plugin.getConfig().getString("database.name", "jobsuite");
         }
     }
 
     public PreparedStatement prepare(String query) {
-        if (connection == null) {
+        if (!connect()) {
             return null;
         }
         PreparedStatement state = statements.get(query);

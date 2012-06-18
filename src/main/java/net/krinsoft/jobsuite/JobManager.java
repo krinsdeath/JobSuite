@@ -41,7 +41,7 @@ public class JobManager {
 
     public void persist() {
         PreparedStatement schema = database.prepare("REPLACE INTO jobsuite_schema (id, NEXT_ID) VALUES (?, ?);");
-        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, lock, finished, claimed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, locked_by, finished, claimed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, item_entry, enchantment_entry, type, amount) VALUES (?, ?, ?, ?, ?);");
         PreparedStatement enchStatement = database.prepare("REPLACE INTO jobsuite_enchantments (job_id, enchantment_entry, enchantment, power) VALUES (?, ?, ?, ?);");
         try {
