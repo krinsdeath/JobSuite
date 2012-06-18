@@ -127,8 +127,14 @@ public class JobManager {
      * @return true if the job was successfully canceled, otherwise false.
      */
     public boolean cancelJob(CommandSender sender, Job job) {
+        if (!(job != null && (job.getOwner().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.cancel") || job.isExpired()))) {
+            return false;
+        }
         Job cancel = jobs.remove(job.getId());
-        if (cancel != null && (cancel.getOwner().equals(sender.getName()) || cancel.getLock().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.cancel") || cancel.isExpired())) {
+        if (cancel != null) {
+            if (sender instanceof Player) {
+                plugin.getBank().give((Player) sender, cancel.getReward(), -1);
+            }
             PreparedStatement basePrep = database.prepare("DELETE FROM jobsuite_base WHERE job_id = ? ;");
             PreparedStatement itemPrep = database.prepare("DELETE FROM jobsuite_items WHERE job_id = ? ;");
             PreparedStatement enchPrep = database.prepare("DELETE FROM jobsuite_enchantments WHERE job_id = ? ;");
