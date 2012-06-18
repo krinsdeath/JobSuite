@@ -23,7 +23,7 @@ public class JobRemoveItemCommand extends JobCommand {
         addKey("jobsuite ri");
         addKey("job ri");
         addKey("js ri");
-        setPermission("jobsuite.removeitem", "Removes an item from the job objectives.", PermissionDefault.TRUE);
+        setPermission("jobsuite.remitem", "Removes an item from the job objectives.", PermissionDefault.TRUE);
     }
 
     @Override

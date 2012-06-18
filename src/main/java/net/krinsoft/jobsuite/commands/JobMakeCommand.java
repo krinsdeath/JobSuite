@@ -21,7 +21,7 @@ public class JobMakeCommand extends JobCommand {
         addKey("jobsuite make");
         addKey("job make");
         addKey("js make");
-        setPermission("jobsuite.makejob", "Creates a job session.", PermissionDefault.TRUE);
+        setPermission("jobsuite.make", "Creates a job session.", PermissionDefault.TRUE);
     }
 
     @Override

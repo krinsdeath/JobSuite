@@ -23,7 +23,7 @@ public class JobDescriptionCommand extends JobCommand {
         addKey("jobsuite desc");
         addKey("job desc");
         addKey("js desc");
-        setPermission("jobsuite.desc", "Sets the description for this job.", PermissionDefault.TRUE);
+        setPermission("jobsuite.description", "Sets the description for this job.", PermissionDefault.TRUE);
     }
 
     @Override

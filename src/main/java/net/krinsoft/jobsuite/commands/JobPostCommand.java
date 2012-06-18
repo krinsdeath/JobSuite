@@ -22,7 +22,7 @@ public class JobPostCommand extends JobCommand {
         addKey("jobsuite post");
         addKey("job post");
         addKey("js post");
-        setPermission("jobsuite.postjob", "Posts the current job.", PermissionDefault.TRUE);
+        setPermission("jobsuite.post", "Posts the current job.", PermissionDefault.TRUE);
     }
 
     @Override
