@@ -2,6 +2,7 @@ package net.krinsoft.jobsuite.commands;
 
 import net.krinsoft.jobsuite.Job;
 import net.krinsoft.jobsuite.JobCore;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
@@ -52,10 +53,11 @@ public class JobAddItemCommand extends JobCommand {
             ItemStack item = new ItemStack(type, amount);
             int id = job.addItem(item);
             message(sender, "Item added at index '" + id + "'");
-            message(sender, "Add an enchantment: /job addenchant " + id + " [enchantment] [level]");
-            message(sender, "Remove this item: /job remitem " + id);
-            message(sender, "Add more items: /job additem [type] [amount]");
-            message(sender, "Post the job: /job post");
+            message(sender, "View item info: " + ChatColor.DARK_AQUA + "/job info this " + id);
+            message(sender, "Add an enchantment: " + ChatColor.DARK_AQUA + "/job addenchant " + id + " [enchantment] [level]");
+            message(sender, "Remove this item: " + ChatColor.DARK_AQUA + "/job remitem " + id);
+            message(sender, "Add more items: " + ChatColor.DARK_AQUA + "/job additem [type] [amount]");
+            message(sender, "Post the job: " + ChatColor.GOLD + "/job post");
         } else {
             error(sender, "You aren't currently making a job.");
         }

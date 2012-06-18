@@ -38,11 +38,12 @@ public class JobBaseCommand extends JobCommand {
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "post    " + ChatColor.RED + "?");
         } else if (args.get(0).equalsIgnoreCase("basic")) {
             sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.AQUA + "Basic Commands" + ChatColor.DARK_GREEN + " ===");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "accept  " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "lock    " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "unlock  " + ChatColor.RED + "?");
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "cancel  " + ChatColor.RED + "?");
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "info    " + ChatColor.RED + "?");
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "list    " + ChatColor.RED + "?");
-        } else if (args.get(0).equalsIgnoreCase("admin") && hasPermission(sender, "jobsuite.help.admin")) {
+        } else if (args.get(0).equalsIgnoreCase("admin") && hasPermission(sender, "jobsuite.admin.help")) {
             sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.AQUA + "Admin Commands" + ChatColor.DARK_GREEN + " ===");
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "reload  " + ChatColor.RED + "?");
             sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "flush   " + ChatColor.RED + "?");

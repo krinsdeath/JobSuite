@@ -57,12 +57,13 @@ public class JobAddEnchantmentCommand extends JobCommand {
             if (ench == null) {
                 error(sender, "No such enchantment.");
             } else if (!ench.canEnchantItem(jItem.getItem())) {
-                error(sender, "You can't attach that enchantment to the specified item.");
+                error(sender, "You can't attach that enchantment (" + ench.getName() + ") to the specified item.");
             } else if (ench.getMaxLevel() > level) {
-                error(sender, "That enchantment can't reach that level.");
+                error(sender, "That enchantment (" + ench.getName() + ") can't reach that level.");
             } else {
                 jItem.addEnchant(ench, level);
                 message(sender, "Enchantment added to item at index '" + jItem.getId() + "'.");
+                message(sender, "View item info: " + ChatColor.DARK_AQUA + "/job info this " + jItem.getId());
                 message(sender, "Remove the enchantment: " + ChatColor.DARK_AQUA + "/job remenchant " + jItem.getId() + " " + ench.getName());
                 message(sender, "Add another enchant: " + ChatColor.DARK_AQUA + "/job addenchant " + jItem.getId() + " [enchantment]");
                 message(sender, "List current items: " + ChatColor.DARK_AQUA + "/job listitems");

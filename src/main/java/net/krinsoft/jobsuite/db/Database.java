@@ -54,18 +54,16 @@ public class Database {
         load();
         try {
             Statement state = connection.createStatement();
-            String rowid;
-            switch (type) {
-                case MySQL: rowid = "SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_name = 'jobsuite_base' ;"; break;
-                case SQLite: rowid = "SELECT ROWID FROM jobsuite_base ;"; break;
-                default: rowid = "SELECT ROWID FROM jobsuite_base ;"; break;
-            }
+            String rowid = "SELECT next_id FROM jobsuite_schema ;";
             ResultSet result = state.executeQuery(rowid);
+            int id = 0;
             while (result.next()) {
-                int id = result.getInt(1);
+                id = result.getInt(1);
                 plugin.getConfig().set("jobs.total", id);
-                plugin.getLogger().info("Total jobs: " + id);
             }
+            plugin.getLogger().info("Total jobs: " + id);
+            result.close();
+            state.close();
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
         }
@@ -119,22 +117,32 @@ public class Database {
         }
         try {
             Statement state = connection.createStatement();
+            state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_schema (" +
+                    "id INTEGER AUTO_INCREMENT, " +
+                    "next_id INTEGER, " +
+                    "PRIMARY KEY (id, next_id)" +
+                    ");"
+            );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_base (" +
-                    "job_id INTEGER AUTO_INCREMENT, " +
+                    "id INTEGER AUTO_INCREMENT, " +
+                    "job_id INTEGER, " +
                     "owner VARCHAR(32), " +
                     "name VARCHAR(32), " +
                     "description TEXT, " +
                     "reward INTEGER, " +
-                    "PRIMARY KEY (job_id, owner)" +
+                    "expiry INTEGER, " +
+                    "lock TEXT, " +
+                    "PRIMARY KEY (id, job_id, owner)" +
                     ");"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_items (" +
                     "item_id INTEGER AUTO_INCREMENT, " +
                     "job_id INTEGER, " +
+                    "item_entry INTEGER, " +
                     "enchantment_entry INTEGER, " +
                     "type TEXT, " +
                     "amount INTEGER, " +
-                    "PRIMARY KEY (item_id), " +
+                    "PRIMARY KEY (item_id, item_entry), " +
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)" +
                     ");"
             );
@@ -157,20 +165,20 @@ public class Database {
     public void load() {
         try {
             Statement state = connection.createStatement();
-            ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base ;");
-            PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ;");
-            PreparedStatement enchState = prepare("SELECT * FROM jobsuite_enchantments WHERE enchantment_entry = ?");
+            ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base WHERE expiry > " + System.currentTimeMillis() + ";");
+            PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ORDER BY item_entry ASC ;");
+            PreparedStatement enchState = prepare("SELECT * FROM jobsuite_enchantments WHERE enchantment_entry = ? ;");
             while (base.next()) {
-                Job job = new Job(base.getString("owner"), base.getString("name"));
-                job.setId(base.getInt("job_id"));
+                Job job = new Job(base.getString("owner"), base.getString("name"), base.getInt("job_id"), base.getLong("expiry"));
                 job.setDescription(base.getString("description"));
                 job.setReward(base.getDouble("reward"));
+                job.lock(base.getString("lock"));
                 itemState.setInt(1, job.getId());
                 ResultSet items = itemState.executeQuery();
                 while (items.next()) {
                     Material type = Material.matchMaterial(items.getString("type"));
                     int amount = items.getInt("amount");
-                    JobItem jItem = job.getItem(job.addItem(new ItemStack(type, amount)));
+                    JobItem jItem = job.getItem(job.addItem(items.getInt("item_entry"), new ItemStack(type, amount)));
                     enchState.setInt(1, items.getInt("enchantment_entry"));
                     ResultSet ench = enchState.executeQuery();
                     while (ench.next()) {

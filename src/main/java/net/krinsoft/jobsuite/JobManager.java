@@ -1,14 +1,12 @@
 package net.krinsoft.jobsuite;
 
 import net.krinsoft.jobsuite.db.Database;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author krinsdeath
@@ -36,24 +34,34 @@ public class JobManager {
     }
 
     public void persist() {
-        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, reward) VALUES (?, ?, ?, ?, ?);");
-        PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, enchantment_entry, type, amount) VALUES (?, ?, ?, ?);");
+        PreparedStatement schema = database.prepare("REPLACE INTO jobsuite_schema (id, NEXT_ID) VALUES (?, ?);");
+        PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, lock) VALUES (?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, item_entry, enchantment_entry, type, amount) VALUES (?, ?, ?, ?, ?);");
         PreparedStatement enchStatement = database.prepare("REPLACE INTO jobsuite_enchantments (job_id, enchantment_entry, enchantment, power) VALUES (?, ?, ?, ?);");
         try {
+            schema.setInt(1, 1);
+            schema.setInt(2, nextJob);
+            schema.executeUpdate();
             jobStatement.getConnection().setAutoCommit(false);
             for (Map.Entry<Integer, Job> entry : jobs.entrySet()) {
                 Job job = entry.getValue();
+                if (job.isExpired()) {
+                    continue;
+                }
                 jobStatement.setInt(1, job.getId());
                 jobStatement.setString(2, job.getOwner());
                 jobStatement.setString(3, job.getName());
                 jobStatement.setString(4, job.getDescription());
-                jobStatement.setDouble(5, job.getReward());
+                jobStatement.setLong(5, job.getDuration());
+                jobStatement.setDouble(6, job.getReward());
+                jobStatement.setString(7, job.getLock());
                 jobStatement.executeUpdate();
                 for (JobItem item : job.getItems()) {
                     itemStatement.setInt(1, job.getId());
-                    itemStatement.setInt(2, item.hashCode());
-                    itemStatement.setString(3, item.getItem().getType().toString());
-                    itemStatement.setInt(4, item.getItem().getAmount());
+                    itemStatement.setInt(2, item.getId());
+                    itemStatement.setInt(3, item.hashCode());
+                    itemStatement.setString(4, item.getItem().getType().toString());
+                    itemStatement.setInt(5, item.getItem().getAmount());
                     itemStatement.executeUpdate();
                     for (Map.Entry<Enchantment, Integer> ench : item.getItem().getEnchantments().entrySet()) {
                         enchStatement.setInt(1, job.getId());
@@ -64,14 +72,10 @@ public class JobManager {
                     }
                 }
             }
-            jobStatement.getConnection().commit();
+            schema.getConnection().commit();
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
         }
-    }
-
-    public int getNextJob() {
-        return this.nextJob;
     }
 
     public List<Job> getJobs() {
@@ -99,18 +103,40 @@ public class JobManager {
      * @return true if the job is valid and added, otherwise false
      */
     public boolean addJob(String owner) {
+        if (owner == null) { return false; }
         Job job = queued.get(owner);
-        if (owner == null || job == null) {
-            return false;
-        }
-        nextJob++;
-        job.setId(nextJob);
+        if (job == null) { return false; }
         jobs.put(job.getId(), job);
+        queued.remove(owner);
         plugin.getConfig().set("jobs.total", nextJob);
         return true;
     }
 
-
+    /**
+     * Attempts to cancel the specified job.
+     * @param sender The person who is issuing the command.
+     * @param job The job we're attempting to cancel.
+     * @return true if the job was successfully canceled, otherwise false.
+     */
+    public boolean cancelJob(CommandSender sender, Job job) {
+        Job cancel = jobs.remove(job.getId());
+        if (cancel != null && (cancel.getOwner().equals(sender.getName()) || sender.hasPermission("jobsuite.admin.cancel") || cancel.isExpired())) {
+            PreparedStatement basePrep = database.prepare("DELETE FROM jobsuite_base WHERE job_id = ? ;");
+            PreparedStatement itemPrep = database.prepare("DELETE FROM jobsuite_items WHERE job_id = ? ;");
+            PreparedStatement enchPrep = database.prepare("DELETE FROM jobsuite_enchantments WHERE job_id = ? ;");
+            try {
+                basePrep.setInt(1, cancel.getId());
+                itemPrep.setInt(1, cancel.getId());
+                enchPrep.setInt(1, cancel.getId());
+                basePrep.executeUpdate();
+                itemPrep.executeUpdate();
+                enchPrep.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+            }
+        }
+        return cancel != null;
+    }
 
     /////////////////
     // JOB QUEUING //
@@ -130,14 +156,15 @@ public class JobManager {
     /**
      * Adds a job to the queue unless the player already has one queued
      * @param player The player responsible for the job
-     * @param job The basic job object
+     * @param name The job's name
      * @return true if the job is added, otherwise false (the player has one queued or an object was null)
      */
-    public boolean addQueuedJob(String player, Job job) {
+    public boolean addQueuedJob(String player, String name) {
         if (queued.get(player) == null) {
-            if (player == null || job == null) {
+            if (player == null || name == null || name.length() == 0) {
                 return false;
             }
+            Job job = new Job(player, name, ++nextJob);
             queued.put(player, job);
             return true;
         }

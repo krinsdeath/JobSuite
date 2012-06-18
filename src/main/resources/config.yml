@@ -5,6 +5,11 @@ database:
   port: 3306
   user: root
   password: root
+
+plugin:
+  debug: false
   
 jobs:
-  total: 0
+  max_accept: 3
+  max_post: 3
+  job_lifetime: 7

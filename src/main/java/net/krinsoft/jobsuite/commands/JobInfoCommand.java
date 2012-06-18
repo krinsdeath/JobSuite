@@ -21,6 +21,8 @@ public class JobInfoCommand extends JobCommand {
         super(instance);
         setName("JobSuite: Job Info");
         setCommandUsage("/job info [job id] [item id]");
+        addCommandExample("/job info 3 0");
+        addCommandExample("/job info this 1");
         setArgRange(0, 2);
         addKey("jobsuite info");
         addKey("job info");
@@ -32,11 +34,15 @@ public class JobInfoCommand extends JobCommand {
     public void runCommand(CommandSender sender, List<String> args) {
         int id = -1;
         Job job;
-        if (args.size() == 0) {
+        if (args.size() == 0 || args.get(0).equalsIgnoreCase("this")) {
             job = manager.getQueuedJob(sender.getName());
         } else {
             try {
-                job = manager.getJob(Integer.parseInt(args.get(0)));
+                if (args.get(0).equalsIgnoreCase("this")) {
+                    job = manager.getQueuedJob(sender.getName());
+                } else {
+                    job = manager.getJob(Integer.parseInt(args.get(0)));
+                }
                 if (args.size() > 1) {
                     id = Integer.parseInt(args.get(1));
                 }
@@ -45,9 +51,28 @@ public class JobInfoCommand extends JobCommand {
             }
         }
         if (job != null) {
-            sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.DARK_AQUA + job.getName() + "(" + ChatColor.GOLD + job.getId() + ChatColor.DARK_AQUA + ")" + ChatColor.DARK_GREEN + " ===");
+            sender.sendMessage(ChatColor.DARK_GREEN + "=== " +
+                    ChatColor.DARK_AQUA + job.getName() + "(" + ChatColor.GOLD + (job.getId() != -1 ? job.getId() : "unposted") + ChatColor.DARK_AQUA + ")" +
+                    (id == -1 ? "": ChatColor.DARK_AQUA + " - item(" + ChatColor.GOLD + id + ChatColor.DARK_AQUA + ")") +
+                    ChatColor.DARK_GREEN + " ==="
+            );
             if (id == -1) {
                 sender.sendMessage(ChatColor.GREEN + "Owner: " + ChatColor.AQUA + job.getOwner());
+                long dur = job.getDuration() - System.currentTimeMillis();
+                String time = String.format("%d days, %d hrs, %d mins, %d seconds",
+                        (dur / (1000 * 60 * 60 * 24)) % 7,
+                        (dur / (1000 * 60 * 60)) % 24,
+                        (dur / (1000 * 60)) % 60,
+                        (dur / 1000) % 60
+                        );
+                sender.sendMessage(ChatColor.GREEN + "Expires in: " + ChatColor.AQUA + time);
+                if (job.getLock() != null) {
+                    if (job.getOwner().equals(sender.getName())) {
+                        sender.sendMessage(ChatColor.GREEN + "Locked by: " + ChatColor.AQUA + job.getLock());
+                    } else if (job.getLock().equals(sender.getName())) {
+                        sender.sendMessage(ChatColor.AQUA + "You've accepted this job.");
+                    }
+                }
                 sender.sendMessage(ChatColor.GREEN + "Description: " + ChatColor.AQUA + job.getDescription());
                 sender.sendMessage(ChatColor.GREEN + "Reward: " + ChatColor.AQUA + job.getReward());
                 sender.sendMessage(ChatColor.GREEN + "Items Needed:");
@@ -61,13 +86,12 @@ public class JobInfoCommand extends JobCommand {
                     return;
                 }
                 ItemStack stack = item.getItem();
-                sender.sendMessage(ChatColor.GREEN + "Item: " + stack.getType().name());
-                sender.sendMessage(ChatColor.GREEN + "Amount: " + stack.getAmount());
+                sender.sendMessage(ChatColor.GREEN + "Item: " + ChatColor.AQUA + stack.getType().name());
+                sender.sendMessage(ChatColor.GREEN + "Amount: " + ChatColor.AQUA + stack.getAmount());
                 sender.sendMessage(ChatColor.GREEN + "Enchantments:");
                 for (Map.Entry<Enchantment, Integer> entry : stack.getEnchantments().entrySet()) {
                     sender.sendMessage(entry.getKey().getName() + " (Level " + entry.getValue() + ")");
-                }
-            }
+                }            }
         } else {
             error(sender, "Couldn't find a matching job.");
         }

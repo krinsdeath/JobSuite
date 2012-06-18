@@ -1,6 +1,5 @@
 package net.krinsoft.jobsuite.commands;
 
-import net.krinsoft.jobsuite.Job;
 import net.krinsoft.jobsuite.JobCore;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +16,8 @@ public class JobMakeCommand extends JobCommand {
         super(instance);
         setName("JobSuite: Make");
         setCommandUsage("/job make [name]");
-        setArgRange(1, 1);
+        addCommandExample("/job make demo");
+        setArgRange(1, 20);
         addKey("jobsuite make");
         addKey("job make");
         addKey("js make");
@@ -26,8 +26,11 @@ public class JobMakeCommand extends JobCommand {
 
     @Override
     public void runCommand(CommandSender sender, List<String> args) {
-        Job job = new Job(sender.getName(), args.get(0));
-        if (manager.addQueuedJob(sender.getName(), job)) {
+        StringBuilder name = new StringBuilder();
+        for (String arg : args) {
+            name.append(arg).append(" ");
+        }
+        if (manager.addQueuedJob(sender.getName(), name.toString().trim())) {
             message(sender, "Job created successfully.");
             message(sender, "Now, enter a description: " + ChatColor.AQUA + "/job desc [description]");
         } else {

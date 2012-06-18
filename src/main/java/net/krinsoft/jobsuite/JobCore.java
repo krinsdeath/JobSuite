@@ -1,7 +1,10 @@
 package net.krinsoft.jobsuite;
 
+import com.fernferret.allpay.AllPay;
+import com.fernferret.allpay.GenericBank;
 import com.pneumaticraft.commandhandler.CommandHandler;
 import net.krinsoft.jobsuite.commands.*;
+import net.krinsoft.jobsuite.listeners.ServerListener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,15 +21,25 @@ import java.util.List;
 public class JobCore extends JavaPlugin {
     private JobManager manager;
     private CommandHandler commands;
+    private GenericBank bank;
+
+    private boolean debug = false;
 
     @Override
     public void onEnable() {
         long time = System.currentTimeMillis();
+        // generate a default config if it doesn't exist already
         if (!new File(getDataFolder(), "config.yml").exists()) {
             getConfig().setDefaults(YamlConfiguration.loadConfiguration(this.getClass().getResourceAsStream("/config.yml")));
             getConfig().options().copyDefaults(true);
             saveConfig();
         }
+        // check debug mode
+        debug = getConfig().getBoolean("plugin.debug");
+
+        // register the economy listener
+        getServer().getPluginManager().registerEvents(new ServerListener(this), this);
+
         initializeManager();
         initializeCommands();
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
@@ -53,6 +66,12 @@ public class JobCore extends JavaPlugin {
         return commands.locateAndRunCommand(sender, allArgs);
     }
 
+    public void debug(String message) {
+        if (debug) {
+            getLogger().info("[Debug] " + message);
+        }
+    }
+
     private void initializeManager() {
         manager = new JobManager(this);
         manager.load();
@@ -74,10 +93,12 @@ public class JobCore extends JavaPlugin {
         commands.registerCommand(new JobRemoveEnchantmentCommand(this));
         commands.registerCommand(new JobListItemCommand(this));
         commands.registerCommand(new JobPostCommand(this));
+        commands.registerCommand(new JobQuitCommand(this));
 
         // ADMINISTRATIVE
-        //commands.registerCommand(new JobAcceptCommand(this));
-        //commands.registerCommand(new JobCancelCommand(this));
+        commands.registerCommand(new JobLockCommand(this));
+        commands.registerCommand(new JobUnlockCommand(this));
+        commands.registerCommand(new JobCancelCommand(this));
         commands.registerCommand(new JobListCommand(this));
         commands.registerCommand(new JobInfoCommand(this));
 
@@ -88,6 +109,24 @@ public class JobCore extends JavaPlugin {
 
     public JobManager getJobManager() {
         return manager;
+    }
+
+    public boolean validateAllPay() {
+        if (bank != null) { return true; }
+        AllPay handle = new AllPay(this, "[JobSuite] ");
+        if ((bank = handle.getEconPlugin()) != null) {
+            debug("Economy hooked.");
+        }
+        return false;
+    }
+
+    public GenericBank getBank() {
+        if (validateAllPay()) {
+            return this.bank;
+        } else {
+            debug("Couldn't find a valid economy plugin.");
+            return null;
+        }
     }
 
 }

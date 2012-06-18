@@ -2,6 +2,7 @@ name: JobSuite
 main: net.krinsoft.jobsuite.JobCore
 version: maven-version-number
 author: krinsdeath
+load: STARTUP
 
 commands:
   jobsuite:
@@ -10,6 +11,12 @@ commands:
     usage: /<command> ...
     
 permissions:
-  jobsuite.help.admin:
+  jobsuite.admin.help:
     description: Allows the user to view JobSuite's administrative command help.
+    default: op
+  jobsuite.admin.cancel:
+    description: Allows the user to force the cancellation of a job.
+    default: op
+  jobsuite.admin.unlock:
+    description: Allows the user to force the unlocking of a job.
     default: op

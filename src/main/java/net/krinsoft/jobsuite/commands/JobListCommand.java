@@ -2,6 +2,7 @@ package net.krinsoft.jobsuite.commands;
 
 import net.krinsoft.jobsuite.Job;
 import net.krinsoft.jobsuite.JobCore;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -41,10 +42,13 @@ public class JobListCommand extends JobCommand {
         } else {
             bound = (page * 6) + 6;
         }
-        message(sender, "Job List [" + page + "/" + pages+ "]");
+        if (page < 0) {
+            page = 1;
+        }
+        message(sender, "Job List [" + (page+1) + "/" + (pages+1) + "] - Total: " + jobs.size());
         for (int i = page * 6; i < bound; i++) {
             Job job = jobs.get(i);
-            message(sender, job.getName() + " (" + job.getId() + "): " + job.getDescription());
+            message(sender, ChatColor.GOLD + "[" + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
         }
     }
 }
