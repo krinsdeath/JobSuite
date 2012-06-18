@@ -30,23 +30,28 @@ public class JobBaseCommand extends JobCommand {
     public void runCommand(CommandSender sender, List<String> args) {
         if (args.get(0).equalsIgnoreCase("jobs")) {
             sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.AQUA + "Job-related Commands" + ChatColor.DARK_GREEN + " ===");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "make    " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "desc    " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "reward  " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "additem " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "remitem " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "post    " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "make       " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "desc       " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "reward     " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "additem    " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "remitem    " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "addenchant " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "remenchant " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "quit       " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "post       " + ChatColor.RED + "?");
         } else if (args.get(0).equalsIgnoreCase("basic")) {
             sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.AQUA + "Basic Commands" + ChatColor.DARK_GREEN + " ===");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "lock    " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "unlock  " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "cancel  " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "info    " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "list    " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "lock       " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "unlock     " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "cancel     " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "claim      " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "finish     " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "info       " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "list       " + ChatColor.RED + "?");
         } else if (args.get(0).equalsIgnoreCase("admin") && hasPermission(sender, "jobsuite.admin.help")) {
             sender.sendMessage(ChatColor.DARK_GREEN + "=== " + ChatColor.AQUA + "Admin Commands" + ChatColor.DARK_GREEN + " ===");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "reload  " + ChatColor.RED + "?");
-            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "flush   " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "reload     " + ChatColor.RED + "?");
+            sender.sendMessage(ChatColor.GREEN + "/job " + ChatColor.GOLD + "flush      " + ChatColor.RED + "?");
         } else {
             showHelp(sender);
         }
