@@ -21,7 +21,7 @@ public class JobListCommand extends JobCommand {
         addKey("jobsuite list");
         addKey("job list");
         addKey("js list");
-        setPermission("jobsuite.listjobs", "Lists active jobs.", PermissionDefault.TRUE);
+        setPermission("jobsuite.list", "Lists active jobs.", PermissionDefault.TRUE);
     }
 
     @Override
@@ -54,7 +54,9 @@ public class JobListCommand extends JobCommand {
         for (int i = page * 6; i < bound; i++) {
             Job job = jobs.get(i);
             if (!job.isFinished()) {
-                message(sender, ChatColor.GOLD + "[ID: " + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
+                if (job.getLock() == null || sender.getName().equals(job.getLock())) {
+                    message(sender, ChatColor.GOLD + "[ID: " + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
+                }
             }
         }
     }
