@@ -1,6 +1,7 @@
 package net.krinsoft.jobsuite;
 
 import net.krinsoft.jobsuite.db.Database;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -161,6 +162,10 @@ public class JobManager {
 
     public void moveToClaims(Job job) {
         if (!job.isFinished()) {
+            Player owner = plugin.getServer().getPlayer(job.getOwner());
+            if (owner != null) {
+                owner.sendMessage(ChatColor.GREEN + "[Job] One of your jobs has been completed: " + ChatColor.AQUA + "/job claim");
+            }
             job.finish();
             claims.add(job);
             if (job.getOwner().equals("CONSOLE")) {
