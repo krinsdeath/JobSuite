@@ -29,8 +29,8 @@ public class JobFinishCommand extends JobCommand {
     public void runCommand(CommandSender sender, List<String> args) {
         try {
             Job job = manager.getJob(Integer.parseInt(args.get(0)));
-            if (job != null) {
-                if (job.hasRequiredItems(sender) && !job.isFinished()) {
+            if (job != null && job.getLock() != null && job.getLock().equals(sender.getName())) {
+                if (!job.isFinished() && job.hasRequiredItems(sender)) {
                     message(sender, "You have all of the required items.");
                     if (sender instanceof Player) {
                         for (JobItem jItem : job.getItems()) {

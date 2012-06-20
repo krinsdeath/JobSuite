@@ -4,6 +4,9 @@ version: maven-version-number
 author: krinsdeath
 load: STARTUP
 
+description: |
+  maven-git-descriptor
+
 commands:
   jobsuite:
     aliases: [job, js]
