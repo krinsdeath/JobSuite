@@ -18,7 +18,10 @@ public class JobAddItemCommand extends JobCommand {
     public JobAddItemCommand(JobCore instance) {
         super(instance);
         setName("JobSuite: Add Item");
-        setCommandUsage("/job additem [type] [amount]");
+        setCommandUsage("/job additem [type[:data]] [amount]");
+        addCommandExample("/job additem stone 64 -- Request 64 stone");
+        addCommandExample("/job additem 17:1 32  -- Request 32 pine wood logs");
+        addCommandExample("/job additem 263:1 64 -- Request 64 charcoal");
         setArgRange(2, 2);
         addKey("jobsuite additem");
         addKey("job additem");
@@ -34,10 +37,19 @@ public class JobAddItemCommand extends JobCommand {
         Job job = manager.getQueuedJob(sender.getName());
         if (job != null) {
             Material type;
+            byte data = 0;
             try {
-                type = Material.getMaterial(Integer.parseInt(args.get(0)));
+                String arg = args.get(0);
+                if (arg.contains(":")) {
+                    arg = args.get(0).split(":")[0];
+                    data = Byte.parseByte(args.get(0).split(":")[1]);
+                }
+                type = Material.getMaterial(Integer.parseInt(arg));
             } catch (NumberFormatException e) {
                 type = Material.matchMaterial(args.get(0));
+            } catch (ArrayIndexOutOfBoundsException e) {
+                error(sender, "Something went wrong with your input.");
+                return;
             }
             if (type == null) {
                 error(sender, "Unknown item type.");
@@ -50,7 +62,10 @@ public class JobAddItemCommand extends JobCommand {
                 error(sender, "Error parsing argument: expected number");
                 return;
             }
-            ItemStack item = new ItemStack(type, amount);
+            if (type.getMaxStackSize() < amount) {
+                error(sender, "Please split the items up into multiple entries.");
+            }
+            ItemStack item = new ItemStack(type, amount, (short) 0, data);
             int id = job.addItem(item);
             message(sender, "Item added at index '" + id + "'");
             message(sender, "View item info: " + ChatColor.DARK_AQUA + "/job info this " + id);
