@@ -55,7 +55,7 @@ public class JobListCommand extends JobCommand {
             Job job = jobs.get(i);
             if (!job.isFinished()) {
                 if (job.getLock() == null || sender.getName().equals(job.getLock())) {
-                    message(sender, ChatColor.GOLD + "[ID: " + job.getId() + "] " + job.getName() + ChatColor.WHITE + ": " + ChatColor.AQUA + job.getDescription());
+                    message(sender, ChatColor.WHITE + "[ID: " + ChatColor.GOLD + job.getId() + ChatColor.WHITE + "] " + job.getName() + ": " + ChatColor.AQUA + job.getDescription());
                 }
             }
         }
