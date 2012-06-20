@@ -30,7 +30,7 @@ public class JobFinishCommand extends JobCommand {
         try {
             Job job = manager.getJob(Integer.parseInt(args.get(0)));
             if (job != null) {
-                if (job.hasRequiredItems(sender)) {
+                if (job.hasRequiredItems(sender) && !job.isFinished()) {
                     message(sender, "You have all of the required items.");
                     if (sender instanceof Player) {
                         for (JobItem jItem : job.getItems()) {

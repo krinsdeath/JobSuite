@@ -107,6 +107,10 @@
                             <token>maven-version-number</token>
                             <value>${project.version}-b${project.build.number}</value>
                         </replacement>
+                        <replacement>
+                            <token>maven-git-descriptor</token>
+                            <value>https://github.com/krinsdeath/JobSuite</value>
+                        </replacement>
                     </replacements>
                 </configuration>
             </plugin>

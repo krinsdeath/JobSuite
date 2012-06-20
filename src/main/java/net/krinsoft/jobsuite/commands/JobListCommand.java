@@ -34,7 +34,7 @@ public class JobListCommand extends JobCommand {
                 page = 1;
             }
         }
-        List<Job> jobs = manager.getJobs();
+        List<Job> jobs = manager.getJobs(sender);
         int pages = jobs.size() / 6;
         int bound = jobs.size();
         if (page >= pages) {
@@ -54,9 +54,7 @@ public class JobListCommand extends JobCommand {
         for (int i = page * 6; i < bound; i++) {
             Job job = jobs.get(i);
             if (!job.isFinished()) {
-                if (job.getLock() == null || sender.getName().equals(job.getLock())) {
-                    message(sender, ChatColor.WHITE + "[ID: " + ChatColor.GOLD + job.getId() + ChatColor.WHITE + "] " + job.getName() + ": " + ChatColor.AQUA + job.getDescription());
-                }
+                message(sender, ChatColor.WHITE + "[ID: " + ChatColor.GOLD + job.getId() + ChatColor.WHITE + "] " + job.getName() + (job.getLock() != null ? ChatColor.GREEN + " (Locked By: " + ChatColor.AQUA + job.getLock() + ChatColor.GREEN + ")" + ChatColor.WHITE : "") + ": " + ChatColor.AQUA + job.getDescription());
             }
         }
     }

@@ -87,8 +87,14 @@ public class JobManager {
         }
     }
 
-    public List<Job> getJobs() {
-        return new ArrayList<Job>(jobs.values());
+    public List<Job> getJobs(CommandSender sender) {
+        List<Job> temp = new ArrayList<Job>();
+        for (Job job : jobs.values()) {
+            if (job.getLock() == null || job.getLock().equals(sender.getName()) || job.getOwner().equals(sender.getName())) {
+                temp.add(job);
+            }
+        }
+        return temp;
     }
 
     /**
