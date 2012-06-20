@@ -127,7 +127,7 @@ public class Database {
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_base (" +
                     "id INTEGER AUTO_INCREMENT, " +
-                    "job_id INTEGER NOT NULL, " +
+                    "job_id INTEGER UNIQUE NOT NULL, " +
                     "owner VARCHAR(32) NOT NULL, " +
                     "name TEXT, " +
                     "description TEXT, " +
@@ -136,7 +136,7 @@ public class Database {
                     "locked_by VARCHAR(32) DEFAULT NULL, " +
                     "finished BOOLEAN DEFAULT false, " +
                     "claimed BOOLEAN DEFAULT false, " +
-                    "PRIMARY KEY (id, job_id, owner) " +
+                    "PRIMARY KEY (id, owner) " +
                     ");"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_items (" +
