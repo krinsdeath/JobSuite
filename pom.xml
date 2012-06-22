@@ -12,6 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.number>DEV</project.build.number>
+        <project.git.descriptor>LOCAL</project.git.descriptor>
     </properties>
 
     <!-- Repository Locations-->
@@ -49,6 +50,7 @@
             </activation>
             <properties>
                 <project.build.number>${env.BUILD_NUMBER}</project.build.number>
+                <project.git.descriptor>Git Commit: ${env.GIT_COMMIT}</project.git.descriptor>
             </properties>
         </profile>
     </profiles>
@@ -109,7 +111,7 @@
                         </replacement>
                         <replacement>
                             <token>maven-git-descriptor</token>
-                            <value>https://github.com/krinsdeath/JobSuite</value>
+                            <value>${project.git.descriptor}</value>
                         </replacement>
                     </replacements>
                 </configuration>

@@ -35,12 +35,12 @@ public class JobListCommand extends JobCommand {
             }
         }
         List<Job> jobs = manager.getJobs(sender);
-        int pages = jobs.size() / 6;
+        int pages = (int) Math.ceil(jobs.size() / 6.0D);
         int bound = jobs.size();
-        if (page >= pages) {
+        if (page > pages) {
             page = pages;
         } else {
-            bound = (page * 6) + 6;
+            bound = ((page - 1) * 6) + 6;
         }
         if (page < 0) {
             page = 1;
@@ -49,9 +49,10 @@ public class JobListCommand extends JobCommand {
             message(sender, "There are no jobs available.");
             return;
         }
-        message(sender, "Job List [" + (page+1) + "/" + (pages+1) + "] - Total: " + jobs.size());
-        message(sender, "Lock: " + ChatColor.AQUA + "/job lock [job id]");
-        for (int i = page * 6; i < bound; i++) {
+        message(sender, "Job List [" + (page) + "/" + (pages) + "] - Total: " + jobs.size());
+        message(sender, "To Lock a Job: " + ChatColor.AQUA + "/job lock [job id]");
+        for (int i = ((page - 1) * 6); i < bound; i++) {
+            if (i >= jobs.size()) { break; }
             Job job = jobs.get(i);
             if (!job.isFinished()) {
                 message(sender, ChatColor.WHITE + "[ID: " + ChatColor.GOLD + job.getId() + ChatColor.WHITE + "] " + job.getName() + (job.getLock() != null ? ChatColor.GREEN + " (Locked By: " + ChatColor.AQUA + job.getLock() + ChatColor.GREEN + ")" + ChatColor.WHITE : "") + ": " + ChatColor.AQUA + job.getDescription());
