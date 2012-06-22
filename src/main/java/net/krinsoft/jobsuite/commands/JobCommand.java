@@ -27,11 +27,13 @@ public abstract class JobCommand extends Command {
         sender.sendMessage(ChatColor.GREEN + "Usage: " + ChatColor.DARK_RED + getCommandUsage());
         sender.sendMessage(ChatColor.GREEN + "Description: " + ChatColor.DARK_AQUA + getCommandDesc());
         sender.sendMessage(ChatColor.GREEN + "Permission: " + ChatColor.DARK_PURPLE + getPermissionString());
-        sender.sendMessage(ChatColor.GREEN + "Examples:");
-        int i = 0;
-        for (String example : getCommandExamples()) {
-            sender.sendMessage(example);
-            if (i++ > 4 && sender instanceof Player) { break; }
+        if (getCommandExamples().size() > 0) {
+            sender.sendMessage(ChatColor.GREEN + "Examples:");
+            int i = 0;
+            for (String example : getCommandExamples()) {
+                sender.sendMessage(example);
+                if (i++ > 4 && sender instanceof Player) { break; }
+            }
         }
     }
 
