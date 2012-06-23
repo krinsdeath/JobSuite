@@ -58,7 +58,7 @@ public class JobAddEnchantmentCommand extends JobCommand {
                 error(sender, "No such enchantment.");
             } else if (!ench.canEnchantItem(jItem.getItem())) {
                 error(sender, "You can't attach that enchantment (" + ench.getName() + ") to the specified item.");
-            } else if (ench.getMaxLevel() > level) {
+            } else if (level > ench.getMaxLevel()) {
                 error(sender, "That enchantment (" + ench.getName() + ") can't reach that level.");
             } else {
                 jItem.addEnchant(ench, level);
