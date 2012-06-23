@@ -31,7 +31,7 @@ public class JobMakeCommand extends JobCommand {
             name.append(arg).append(" ");
         }
         if (manager.addQueuedJob(sender.getName(), name.toString().trim())) {
-            message(sender, "Job created successfully.");
+            message(sender, "Job '" + name.toString().trim() + "' created successfully.");
             message(sender, "Now, enter a description: " + ChatColor.AQUA + "/job desc [description]");
         } else {
             error(sender, "Failed to create job.");
