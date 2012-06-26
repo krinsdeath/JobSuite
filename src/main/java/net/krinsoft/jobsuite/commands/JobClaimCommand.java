@@ -31,8 +31,13 @@ public class JobClaimCommand extends JobCommand {
     @Override
     public void runCommand(CommandSender sender, List<String> args) {
         if (args.size() == 0) {
-            for (Job job : manager.getClaimableJobs(sender)) {
-                message(sender, ChatColor.GOLD + "[" + job.getId() + "] " + ChatColor.WHITE + job.getName() + ": Requires " + ChatColor.GOLD + job.getItems().size() + " free slots");
+            List<Job> jobs = manager.getClaimableJobs(sender);
+            if (jobs.size() > 0) {
+                for (Job job : jobs) {
+                    message(sender, ChatColor.GOLD + "[" + job.getId() + "] " + ChatColor.WHITE + job.getName() + ": Requires " + ChatColor.GOLD + job.getItems().size() + " free slots");
+                }
+            } else {
+                message(sender, "You don't have any claimable jobs.");
             }
             return;
         }
