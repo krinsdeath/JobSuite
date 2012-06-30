@@ -64,6 +64,7 @@ public class JobAddItemCommand extends JobCommand {
             }
             if (type.getMaxStackSize() < amount) {
                 error(sender, "Please split the items up into multiple entries.");
+                return;
             }
             ItemStack item = new ItemStack(type, amount, (short) 0, data);
             int id = job.addItem(item);
