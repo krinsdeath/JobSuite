@@ -5,9 +5,13 @@ import net.krinsoft.jobsuite.JobCore;
 import net.krinsoft.jobsuite.JobItem;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionDefault;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author krinsdeath
@@ -34,7 +38,7 @@ public class JobFinishCommand extends JobCommand {
                     message(sender, "You have all of the required items.");
                     if (sender instanceof Player) {
                         for (JobItem jItem : job.getItems()) {
-                            ((Player)sender).getInventory().remove(jItem.getItem());
+                            ((Player)sender).getInventory().removeItem(jItem.getItem());
                         }
                     }
                     manager.finishJob(sender, job);

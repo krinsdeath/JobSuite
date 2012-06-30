@@ -207,9 +207,13 @@ public class Job {
                 for (ItemStack invItem : ((Player)sender).getInventory().getContents()) {
                     if (matchingItems >= getItems().size()) { break; }
                     if (invItem == null) { continue; }
-                    if (invItem.equals(jobItem.getItem())) {
-                        matchingItems++;
-                        break;
+                    if (invItem.getType().equals(jobItem.getItem().getType()) && invItem.getAmount() >= jobItem.getItem().getAmount()) {
+                        if (invItem.getData().equals(jobItem.getItem().getData())) {
+                            if (invItem.getEnchantments().equals(jobItem.getItem().getEnchantments())) {
+                                matchingItems++;
+                                break;
+                            }
+                        }
                     }
                 }
             }

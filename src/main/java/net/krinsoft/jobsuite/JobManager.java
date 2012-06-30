@@ -203,6 +203,7 @@ public class JobManager {
         if (claims.contains(job)) {
             job.claim();
             claims.remove(job);
+            jobs.remove(job.getId());
         }
     }
 
