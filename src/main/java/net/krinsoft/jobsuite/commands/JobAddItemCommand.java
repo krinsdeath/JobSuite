@@ -55,6 +55,9 @@ public class JobAddItemCommand extends JobCommand {
                 error(sender, "Unknown item type.");
                 return;
             }
+            if (type == Material.PISTON_STICKY_BASE) {
+                data = 7;
+            }
             int amount;
             try {
                 amount = Integer.parseInt(args.get(1));
@@ -68,7 +71,7 @@ public class JobAddItemCommand extends JobCommand {
             }
             ItemStack item = new ItemStack(type, amount, (short) 0, data);
             int id = job.addItem(item);
-            message(sender, "Item added at index '" + id + "'");
+            message(sender, "Item added at index '" + id + "': " + item.getType().toString());
             message(sender, "View item info: " + ChatColor.DARK_AQUA + "/job info this " + id);
             message(sender, "Add an enchantment: " + ChatColor.DARK_AQUA + "/job addenchant " + id + " [enchantment] [level]");
             message(sender, "Remove this item: " + ChatColor.DARK_AQUA + "/job remitem " + id);
