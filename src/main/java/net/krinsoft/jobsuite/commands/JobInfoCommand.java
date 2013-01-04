@@ -71,6 +71,8 @@ public class JobInfoCommand extends JobCommand {
                         sender.sendMessage(ChatColor.GREEN + "Locked by: " + ChatColor.AQUA + job.getLock());
                     } else if (job.getLock().equals(sender.getName())) {
                         sender.sendMessage(ChatColor.AQUA + "You've accepted this job.");
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "This job is locked.");
                     }
                 }
                 sender.sendMessage(ChatColor.GREEN + "Description: " + ChatColor.AQUA + job.getDescription());
