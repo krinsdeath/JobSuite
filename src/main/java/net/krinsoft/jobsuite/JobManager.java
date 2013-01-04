@@ -107,9 +107,15 @@ public class JobManager {
     }
 
     public boolean addJob(Job job) {
-        plugin.getLogger().finer("Job '" + job.getName() + "' registered.");
-        jobs.put(job.getId(), job);
-        return true;
+        Job j = jobs.get(job.getId());
+        if (j != null && j.equals(job)) {
+            plugin.getLogger().finest("Duplicate job: '" + job.getName() + "'@'" + job.getId() + "'");
+            return false;
+        } else {
+            plugin.getLogger().finer("Job '" + job.getName() + "'@'" + job.getId() + "' registered.");
+            jobs.put(job.getId(), job);
+            return true;
+        }
     }
 
     /**
