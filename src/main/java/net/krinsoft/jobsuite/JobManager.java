@@ -76,8 +76,8 @@ public class JobManager {
                     for (Map.Entry<Enchantment, Integer> ench : item.getItem().getEnchantments().entrySet()) {
                         enchStatement.setInt(1, job.getId());
                         enchStatement.setInt(2, item.hashCode());
-                        enchStatement.setInt(3, ench.getKey().getId());
-                        enchStatement.setInt(4, item.getId());
+                        enchStatement.setInt(3, item.getId());
+                        enchStatement.setInt(4, ench.getKey().getId());
                         enchStatement.setInt(5, ench.getValue());
                         enchStatement.executeUpdate();
                     }
