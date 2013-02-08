@@ -43,8 +43,8 @@ public class JobManager {
     public void persist() {
         PreparedStatement schema = database.prepare("REPLACE INTO jobsuite_schema (id, NEXT_ID) VALUES (?, ?);");
         PreparedStatement jobStatement = database.prepare("REPLACE INTO jobsuite_base (job_id, owner, name, description, expiry, reward, locked_by, finished, claimed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
-        PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, item_entry, enchantment_entry, type, amount) VALUES (?, ?, ?, ?, ?);");
-        PreparedStatement enchStatement = database.prepare("REPLACE INTO jobsuite_enchantments (job_id, enchantment_entry, enchantment, power) VALUES (?, ?, ?, ?);");
+        PreparedStatement itemStatement = database.prepare("REPLACE INTO jobsuite_items (job_id, item_entry, enchantment_entry, type, amount, enchanted) VALUES (?, ?, ?, ?, ?, ?);");
+        PreparedStatement enchStatement = database.prepare("REPLACE INTO jobsuite_enchantments (job_id, enchantment_entry, item_entry, enchantment, power) VALUES (?, ?, ?, ?, ?);");
         try {
             schema.setInt(1, 1);
             schema.setInt(2, nextJob);
@@ -71,12 +71,14 @@ public class JobManager {
                     itemStatement.setInt(3, item.hashCode());
                     itemStatement.setString(4, item.getItem().getType().toString());
                     itemStatement.setInt(5, item.getItem().getAmount());
+                    itemStatement.setBoolean(6, item.getItem().getEnchantments().size() > 0);
                     itemStatement.executeUpdate();
                     for (Map.Entry<Enchantment, Integer> ench : item.getItem().getEnchantments().entrySet()) {
                         enchStatement.setInt(1, job.getId());
                         enchStatement.setInt(2, item.hashCode());
                         enchStatement.setInt(3, ench.getKey().getId());
-                        enchStatement.setInt(4, ench.getValue());
+                        enchStatement.setInt(4, item.getId());
+                        enchStatement.setInt(5, ench.getValue());
                         enchStatement.executeUpdate();
                     }
                 }

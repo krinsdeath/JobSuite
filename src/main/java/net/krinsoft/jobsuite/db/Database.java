@@ -7,7 +7,12 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -136,7 +141,7 @@ public class Database {
                     "locked_by VARCHAR(32) DEFAULT NULL, " +
                     "finished BOOLEAN DEFAULT false, " +
                     "claimed BOOLEAN DEFAULT false, " +
-                    "PRIMARY KEY (id, owner) " +
+                    "PRIMARY KEY (id, owner, expiry, claimed) " +
                     ");"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_items (" +
@@ -146,6 +151,7 @@ public class Database {
                     "enchantment_entry INTEGER NOT NULL, " +
                     "type TEXT, " +
                     "amount INTEGER, " +
+                    "enchanted BOOLEAN DEFAULT false, " +
                     "PRIMARY KEY (item_id, item_entry), " +
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)" +
                     ");"
@@ -154,13 +160,35 @@ public class Database {
                     "enchantment_id INTEGER AUTO_INCREMENT, " +
                     "job_id INTEGER NOT NULL, " +
                     "enchantment_entry INTEGER NOT NULL, " +
+                    "item_entry INTEGER NOT NULL, " +
                     "enchantment INTEGER, " +
                     "power INTEGER," +
                     "PRIMARY KEY (enchantment_id), " +
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)," +
-                    "FOREIGN KEY (enchantment_entry) REFERENCES jobsuite_items(enchantment_entry)" +
+                    "FOREIGN KEY (enchantment_entry) REFERENCES jobsuite_items(enchantment_entry)," +
+                    "FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry)" +
                     ");"
             );
+            state.executeUpdate("ALTER TABLE jobsuite_base " +
+                    "DROP PRIMARY KEY, " +
+                    "ADD PRIMARY KEY (id, owner, expiry, claimed);");
+            try {
+                state.executeUpdate("ALTER TABLE jobsuite_items " +
+                        "ADD enchanted BOOLEAN AFTER amount;");
+            } catch (SQLException e) {
+                if (!e.getMessage().contains("Duplicate column")) {
+                    plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+                }
+            }
+            try {
+                state.executeUpdate("ALTER TABLE jobsuite_enchantments " +
+                        "ADD item_entry INTEGER NOT NULL AFTER enchantment_entry," +
+                        "ADD FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry); ");
+            } catch (SQLException e) {
+                if (!e.getMessage().contains("Duplicate column")) {
+                    plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+                }
+            }
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
         }
@@ -172,9 +200,13 @@ public class Database {
                 return;
             }
             Statement state = connection.createStatement();
-            ResultSet base = state.executeQuery("SELECT * FROM jobsuite_base WHERE expiry > " + System.currentTimeMillis() + " AND claimed = 'false' ;");
-            PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ORDER BY item_entry ASC ;");
-            PreparedStatement enchState = prepare("SELECT * FROM jobsuite_enchantments WHERE enchantment_entry = ? ;");
+            PreparedStatement bottom = prepare("SELECT * FROM jobsuite_base WHERE expiry > ? AND claimed = false ;");
+            bottom.setLong(1, System.currentTimeMillis());
+            ResultSet base = bottom.executeQuery();
+            PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ;");
+            PreparedStatement enchState = prepare("SELECT * FROM jobsuite_enchantments WHERE job_id = ? AND item_entry = ? AND enchantment_entry = ? ;");
+            ItemStack item = new ItemStack(1, 1);
+            long time = System.nanoTime();
             while (base.next()) {
                 Job job = new Job(base.getString("owner"), base.getString("name"), base.getInt("job_id"), base.getLong("expiry"));
                 job.setDescription(base.getString("description"));
@@ -185,19 +217,26 @@ public class Database {
                 while (items.next()) {
                     Material type = Material.matchMaterial(items.getString("type"));
                     int amount = items.getInt("amount");
-                    JobItem jItem = job.getItem(job.addItem(items.getInt("item_entry"), new ItemStack(type, amount)));
-                    enchState.setInt(1, items.getInt("enchantment_entry"));
-                    ResultSet ench = enchState.executeQuery();
-                    while (ench.next()) {
-                        Enchantment enchantment = Enchantment.getById(ench.getInt("enchantment"));
-                        int level = ench.getInt("power");
-                        jItem.addEnchant(enchantment, level);
+                    item.setType(type);
+                    item.setAmount(amount);
+                    JobItem jItem = job.getItem(job.addItem(items.getInt("item_entry"), item.clone()));
+                    if (items.getBoolean("enchanted")) {
+                        enchState.setInt(1, job.getId());
+                        enchState.setInt(2, items.getInt("item_entry"));
+                        enchState.setInt(3, items.getInt("enchantment_entry"));
+                        ResultSet ench = enchState.executeQuery();
+                        while (ench.next()) {
+                            Enchantment enchantment = Enchantment.getById(ench.getInt("enchantment"));
+                            int level = ench.getInt("power");
+                            jItem.addEnchant(enchantment, level);
+                        }
                     }
                 }
                 plugin.getJobManager().addJob(job);
                 if (base.getBoolean("finished")) {
                     plugin.getJobManager().moveToClaims(job);
                 }
+                plugin.getLogger().info("[Profiler] " + job.getId() + " took " + (System.nanoTime() - time) + "ns");
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
