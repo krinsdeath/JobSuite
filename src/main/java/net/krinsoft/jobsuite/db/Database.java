@@ -169,24 +169,26 @@ public class Database {
                     "FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry)" +
                     ");"
             );
-            state.executeUpdate("ALTER TABLE jobsuite_base " +
-                    "DROP PRIMARY KEY, " +
-                    "ADD PRIMARY KEY (id, owner, expiry, claimed);");
-            try {
-                state.executeUpdate("ALTER TABLE jobsuite_items " +
-                        "ADD enchanted BOOLEAN AFTER amount;");
-            } catch (SQLException e) {
-                if (!e.getMessage().contains("Duplicate column")) {
-                    plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+            if (type == Type.MySQL) {
+                state.executeUpdate("ALTER TABLE jobsuite_base " +
+                        "DROP PRIMARY KEY, " +
+                        "ADD PRIMARY KEY (id, owner, expiry, claimed);");
+                try {
+                    state.executeUpdate("ALTER TABLE jobsuite_items " +
+                            "ADD enchanted BOOLEAN AFTER amount;");
+                } catch (SQLException e) {
+                    if (!e.getMessage().contains("Duplicate column")) {
+                        plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+                    }
                 }
-            }
-            try {
-                state.executeUpdate("ALTER TABLE jobsuite_enchantments " +
-                        "ADD item_entry INTEGER NOT NULL AFTER enchantment_entry," +
-                        "ADD FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry); ");
-            } catch (SQLException e) {
-                if (!e.getMessage().contains("Duplicate column")) {
-                    plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+                try {
+                    state.executeUpdate("ALTER TABLE jobsuite_enchantments " +
+                            "ADD item_entry INTEGER NOT NULL AFTER enchantment_entry," +
+                            "ADD FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry); ");
+                } catch (SQLException e) {
+                    if (!e.getMessage().contains("Duplicate column")) {
+                        plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -200,7 +202,7 @@ public class Database {
                 return;
             }
             Statement state = connection.createStatement();
-            PreparedStatement bottom = prepare("SELECT * FROM jobsuite_base WHERE expiry > ? AND claimed = false ;");
+            PreparedStatement bottom = prepare("SELECT * FROM jobsuite_base WHERE expiry > ? AND claimed = 'false' ;");
             bottom.setLong(1, System.currentTimeMillis());
             ResultSet base = bottom.executeQuery();
             PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ;");
