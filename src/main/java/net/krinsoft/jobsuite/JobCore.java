@@ -1,7 +1,7 @@
 package net.krinsoft.jobsuite;
 
 import com.fernferret.allpay.AllPay;
-import com.fernferret.allpay.GenericBank;
+import com.fernferret.allpay.commons.GenericBank;
 import com.pneumaticraft.commandhandler.CommandHandler;
 import net.krinsoft.jobsuite.commands.*;
 import net.krinsoft.jobsuite.listeners.ServerListener;
