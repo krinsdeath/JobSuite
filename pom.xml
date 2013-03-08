@@ -140,7 +140,7 @@
         <dependency>
             <groupId>com.fernferret.allpay</groupId>
             <artifactId>AllPay</artifactId>
-            <version>13</version>
+            <version>14</version>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
