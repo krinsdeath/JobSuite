@@ -6,7 +6,7 @@
 
     <groupId>net.krinsoft</groupId>
     <artifactId>jobsuite</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>JobSuite</name>
 
     <properties>
@@ -140,7 +140,7 @@
         <dependency>
             <groupId>com.fernferret.allpay</groupId>
             <artifactId>AllPay</artifactId>
-            <version>14</version>
+            <version>15</version>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
