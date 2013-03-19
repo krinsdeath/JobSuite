@@ -66,6 +66,11 @@ public class JobCore extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (commands == null) {
+            getLogger().info("JobSuite encountered an error on Startup. Please check the log and report the error.");
+            getLogger().info("JobSuite is now disabling itself.");
+            getServer().getPluginManager().disablePlugin(this);
+        }
         List<String> allArgs = new ArrayList<String>(Arrays.asList(args));
         allArgs.add(0, label);
         return commands.locateAndRunCommand(sender, allArgs);
