@@ -202,7 +202,7 @@ public class Database {
                 return;
             }
             Statement state = connection.createStatement();
-            PreparedStatement bottom = prepare("SELECT * FROM jobsuite_base WHERE expiry > ? AND claimed = 'false' ;");
+            PreparedStatement bottom = prepare("SELECT * FROM jobsuite_base WHERE expiry > ? AND claimed = '0' ;");
             bottom.setLong(1, System.currentTimeMillis());
             ResultSet base = bottom.executeQuery();
             PreparedStatement itemState = prepare("SELECT * FROM jobsuite_items WHERE job_id = ? ;");
