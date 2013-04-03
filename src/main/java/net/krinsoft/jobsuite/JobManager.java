@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class JobManager {
             schema.setInt(2, nextJob);
             schema.executeUpdate();
             jobStatement.getConnection().setAutoCommit(false);
+            Map<Integer, Job> jobs = Collections.unmodifiableMap(this.jobs);
             for (Map.Entry<Integer, Job> entry : jobs.entrySet()) {
                 Job job = entry.getValue();
                 if (job.isExpired()) {
