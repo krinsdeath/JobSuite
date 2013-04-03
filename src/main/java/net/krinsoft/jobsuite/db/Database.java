@@ -128,7 +128,7 @@ public class Database {
                     "id INTEGER AUTO_INCREMENT, " +
                     "next_id INTEGER, " +
                     "PRIMARY KEY (id, next_id)" +
-                    ");"
+                    ") ENGINE = INNODB;"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_base (" +
                     "id INTEGER AUTO_INCREMENT, " +
@@ -142,7 +142,7 @@ public class Database {
                     "finished BOOLEAN DEFAULT false, " +
                     "claimed BOOLEAN DEFAULT false, " +
                     "PRIMARY KEY (id, owner, expiry, claimed) " +
-                    ");"
+                    ") ENGINE = INNODB;"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_items (" +
                     "item_id INTEGER AUTO_INCREMENT, " +
@@ -154,7 +154,7 @@ public class Database {
                     "enchanted BOOLEAN DEFAULT false, " +
                     "PRIMARY KEY (item_id, item_entry), " +
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)" +
-                    ");"
+                    ") ENGINE = INNODB;"
             );
             state.executeUpdate("CREATE TABLE IF NOT EXISTS jobsuite_enchantments (" +
                     "enchantment_id INTEGER AUTO_INCREMENT, " +
@@ -167,7 +167,7 @@ public class Database {
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)," +
                     "FOREIGN KEY (enchantment_entry) REFERENCES jobsuite_items(enchantment_entry)," +
                     "FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry)" +
-                    ");"
+                    ") ENGINE = INNODB;"
             );
             if (type == Type.MySQL) {
                 state.executeUpdate("ALTER TABLE jobsuite_base " +
