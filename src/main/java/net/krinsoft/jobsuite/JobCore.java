@@ -47,7 +47,7 @@ public class JobCore extends JavaPlugin {
 
         initializeManager();
         initializeCommands();
-        getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+        getServer().getScheduler().runTaskTimerAsynchronously(this, new Runnable() {
             @Override
             public void run() {
                 manager.persist();
