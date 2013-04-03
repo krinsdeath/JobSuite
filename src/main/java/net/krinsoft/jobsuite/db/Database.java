@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 
 /**
  * @author krinsdeath
@@ -152,7 +153,7 @@ public class Database {
                     "type TEXT, " +
                     "amount INTEGER, " +
                     "enchanted BOOLEAN DEFAULT false, " +
-                    "PRIMARY KEY (item_id, item_entry), " +
+                    "PRIMARY KEY (item_id, item_entry, enchantment_entry), " +
                     "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)" +
                     ")" + (type == Type.SQLite ? "" : "ENGINE = INNODB;")
             );
@@ -164,9 +165,7 @@ public class Database {
                     "enchantment INTEGER, " +
                     "power INTEGER," +
                     "PRIMARY KEY (enchantment_id), " +
-                    "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)," +
-                    "FOREIGN KEY (enchantment_entry) REFERENCES jobsuite_items(enchantment_entry)," +
-                    "FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry)" +
+                    "FOREIGN KEY (job_id) REFERENCES jobsuite_base(job_id)" +
                     ")" + (type == Type.SQLite ? "" : "ENGINE = INNODB;")
             );
             if (type == Type.MySQL) {
@@ -182,17 +181,29 @@ public class Database {
                     }
                 }
                 try {
+                    state.executeUpdate("ALTER TABLE jobsuite_items " +
+                            "ADD INDEX (item_entry, enchantment_entry);");
+                } catch (SQLException e) {
+                    plugin.getLogger().log(Level.WARNING, e.getMessage(), e);
+                }
+                try {
                     state.executeUpdate("ALTER TABLE jobsuite_enchantments " +
-                            "ADD item_entry INTEGER NOT NULL AFTER enchantment_entry," +
-                            "ADD FOREIGN KEY (item_entry) REFERENCES jobsuite_items(item_entry); ");
+                            "ADD item_entry INTEGER NOT NULL AFTER enchantment_entry;");
                 } catch (SQLException e) {
                     if (!e.getMessage().contains("Duplicate column")) {
                         plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
                     }
                 }
+                try {
+                    state.executeUpdate("ALTER TABLE jobsuite_enchantments " +
+                            "ADD FOREIGN KEY (item_entry, enchantment_entry) REFERENCES jobsuite_items(item_entry, enchantment_entry); ");
+                } catch (SQLException e) {
+                    plugin.getLogger().log(Level.WARNING, e.getMessage(), e);
+                }
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("An SQLException occurred: " + e.getMessage());
+            plugin.getLogger().log(Level.WARNING, e.getMessage(), e);
         }
     }
 
