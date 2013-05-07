@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -259,8 +260,8 @@ public class Database {
     public String getDatabasePath() {
         String path;
         if (type == Type.SQLite) {
-            path = "jdbc:sqlite:" + plugin.getDataFolder().toString() + "/";
-            return path += plugin.getConfig().getString("database.name", "jobsuite") + ".db";
+            path = "jdbc:sqlite:" + plugin.getDataFolder().toString() + File.separator;
+            return path += plugin.getConfig().getString("database.name", "jobsuite").replaceAll("[:./\\\\]", "") + ".db";
         } else {
             path = "jdbc:mysql://" + plugin.getConfig().getString("database.host", "localhost");
             path += ":" + plugin.getConfig().getInt("database.port", 3306);
