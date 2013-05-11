@@ -48,7 +48,10 @@ public class JobClaimCommand extends JobCommand {
                     for (JobItem jItem : job.getItems()) {
                         Map<Integer, ItemStack> items = ((Player)sender).getInventory().addItem(jItem.getItem());
                         if (items.size() > 0) {
-                            error(sender, "Some items couldn't be claimed.");
+                            error(sender, "You don't have enough inventory space; items dropped in front of you");
+                            for(ItemStack iStack : items.values()) {
+                            	((Player) sender).getWorld().dropItemNaturally(((Player) sender).getLocation(), iStack);
+                            }
                         }
                     }
                     message(sender, "You've claimed your rewards.");
